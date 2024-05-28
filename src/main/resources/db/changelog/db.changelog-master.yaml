@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: USERAPI/master.yaml
+      relativeToChangelogFile: true
