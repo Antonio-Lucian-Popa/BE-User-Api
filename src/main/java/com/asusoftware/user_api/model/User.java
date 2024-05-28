@@ -6,9 +6,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,8 +34,9 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "birthday", nullable = false)
-    private LocalDate birthday;
+    private Date birthday;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 255)
     private Gender gender;
 

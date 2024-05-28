@@ -8,7 +8,7 @@ CREATE TABLE users (
     email VARCHAR(50) NOT NULL,
     password VARCHAR(100) NOT NULL,
     birthday TIMESTAMP NOT NULL,
-    gender VARCHAR(255),
+    gender VARCHAR(30),
     profile_image VARCHAR(255),
     role VARCHAR(20) NOT NULL,
     activation_code VARCHAR(36),

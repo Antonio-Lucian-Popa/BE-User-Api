@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -16,7 +17,7 @@ public class UserResponseDto {
     private String firstName;
     private String lastName;
     private String email;
-    private LocalDate birthday;
+    private Date birthday;
     private Gender gender;
     private String profileImage;
     private Role role;

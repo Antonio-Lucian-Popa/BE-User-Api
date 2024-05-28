@@ -1,5 +1,6 @@
 package com.asusoftware.user_api.service;
 
+import com.asusoftware.user_api.exceptions.UserNotFoundException;
 import com.asusoftware.user_api.model.User;
 import com.asusoftware.user_api.model.dto.UserDto;
 import com.asusoftware.user_api.model.dto.UserResponseDto;
@@ -29,6 +30,6 @@ public class UserService {
     }
 
     public UserResponseDto findByEmail(String email) {
-        return UserResponseDto.toDto(userRepository.findByEmail(email));
+        return UserResponseDto.toDto(userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found by email")));
     }
 }

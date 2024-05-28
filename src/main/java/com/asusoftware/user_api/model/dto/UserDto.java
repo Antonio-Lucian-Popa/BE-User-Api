@@ -6,6 +6,7 @@ import com.asusoftware.user_api.model.User;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 public class UserDto {
@@ -14,7 +15,7 @@ public class UserDto {
     private String lastName;
     private String email;
     private String password;
-    private LocalDate birthday;
+    private Date birthday;
     private Gender gender;
     private String profileImage;
     private Role role;
