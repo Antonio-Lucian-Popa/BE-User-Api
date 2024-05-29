@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public UserResponseDto saveUser(UserDto userDto) {
         User user = UserDto.toEntity(userDto);

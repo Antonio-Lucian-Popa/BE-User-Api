@@ -15,13 +15,15 @@ CREATE TABLE users (
     enabled BOOLEAN NOT NULL
 );
 
--- changeset yourname:create-token-table
+-- Creating the token table
 CREATE TABLE token (
     id UUID PRIMARY KEY,
     token VARCHAR(255) UNIQUE NOT NULL,
     token_type VARCHAR(255) NOT NULL,
     revoked BOOLEAN NOT NULL,
     expired BOOLEAN NOT NULL,
+    created_date TIMESTAMP NOT NULL,
+    token_purpose VARCHAR(50) NOT NULL,
     user_id UUID,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

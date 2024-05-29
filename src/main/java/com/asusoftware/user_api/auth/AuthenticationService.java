@@ -7,11 +7,14 @@ import com.asusoftware.user_api.exceptions.UserNotFoundException;
 import com.asusoftware.user_api.model.Role;
 import com.asusoftware.user_api.model.User;
 import com.asusoftware.user_api.repository.UserRepository;
+import com.asusoftware.user_api.service.EmailService;
 import com.asusoftware.user_api.service.UserService;
 import com.asusoftware.user_api.token.model.Token;
+import com.asusoftware.user_api.token.model.TokenPurpose;
 import com.asusoftware.user_api.token.model.TokenType;
 import com.asusoftware.user_api.token.repository.TokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,18 +31,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
+    @Value("${external-link.server-mail-url}")
+    private String serverMailUrl;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final UserService userService;
+    private final EmailService emailService;
 
     @Value("${upload.dir}")
     private String uploadDir;
@@ -58,7 +65,15 @@ public class AuthenticationService {
         user.setBirthday(request.getBirthday());
         user.setGender(request.getGender());
         user.setRole(request.getRole());
+        user.setEnabled(false); // User is disabled until email confirmation
         var savedUser= userRepository.save(user);
+
+        // Create and save confirmation token
+        Token confirmationToken = createConfirmationToken(savedUser);
+        tokenRepository.save(confirmationToken);
+
+        // Send confirmation email
+        sendConfirmationEmail(savedUser, confirmationToken.getToken());
 
 //        if (file != null && !file.isEmpty()) {
 //            userService.uploadProfileImage(
@@ -76,7 +91,25 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .message("Registration successful. Please check your email to confirm your account.")
                 .build();
+    }
+
+    public void confirmUser(String token) {
+        Token confirmationToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (confirmationToken.getTokenPurpose() != TokenPurpose.EMAIL_CONFIRMATION) {
+            throw new IllegalArgumentException("Token not intended for email confirmation");
+        }
+
+        User user = confirmationToken.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        // Optionally, mark the token as expired
+        confirmationToken.setExpired(true);
+        tokenRepository.save(confirmationToken);
     }
 
 
@@ -100,6 +133,8 @@ public class AuthenticationService {
                 .user(user)
                 .token(jwtToken)
                 .tokenType(TokenType.BEARER)
+                .tokenPurpose(TokenPurpose.AUTHENTICATION)
+                .createdDate(new Date())
                 .expired(false)
                 .revoked(false)
                 .build();
@@ -199,5 +234,23 @@ public class AuthenticationService {
         user.setEnabled(true);
         // userRepository.updateUserStatus(activationCode);
         userRepository.save(user);
+    }
+
+    private Token createConfirmationToken(User user) {
+        return Token.builder()
+                .token(UUID.randomUUID().toString())
+                .tokenType(TokenType.BEARER)
+                .tokenPurpose(TokenPurpose.EMAIL_CONFIRMATION)
+                .createdDate(new Date())
+                .user(user)
+                .revoked(false)
+                .expired(false)
+                .build();
+    }
+
+    private void sendConfirmationEmail(User user, String token) throws MessagingException {
+        String confirmationUrl = serverMailUrl + "?token=" + token;
+        String message = "Please click the link below to confirm your email address: \n" + confirmationUrl;
+        emailService.sendEmail(user.getEmail(), "Email Confirmation", message);
     }
 }

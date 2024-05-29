@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -33,4 +34,12 @@ public class Token {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     public User user;
+
+    // Additional field for distinguishing token purposes (optional)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "token_purpose")
+    private TokenPurpose tokenPurpose;
+
+    @Column(name = "created_date", nullable = false)
+    private Date createdDate;
 }

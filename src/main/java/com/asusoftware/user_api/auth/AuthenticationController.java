@@ -26,6 +26,12 @@ public class AuthenticationController {
       return ResponseEntity.ok(authenticationService.register(request, file));
     }
 
+    @GetMapping("/confirm")
+    public String confirmUser(@RequestParam("token") String token) {
+        authenticationService.confirmUser(token);
+        return "User confirmed";
+    }
+
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
       return ResponseEntity.ok(authenticationService.authenticate(request));
